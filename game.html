@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8"><title>Yandere Day 2</title>
+    <style>
+        body { background: url('bg.png') no-repeat center fixed; background-size: cover; color: #fff; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; position: relative; }
+        #ov { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(26,2,8,0.4); transition: 1s; z-index: 1; }
+        @keyframes shake { 0%,100%{transform:translate(0,0)} 20%{transform:translate(-3px,2px)} 40%{transform:translate(3px,-1px)} 60%{transform:translate(-1px,-2px)} 80%{transform:translate(2px,1px)} }
+        .shake { animation: shake 0.3s infinite; }
+        .heart { position: absolute; color: #ff1493; animation: float 4s linear infinite; bottom: -50px; z-index: 2; }
+        @keyframes float { 0%{transform:translateY(0)} 100%{transform:translateY(-110vh)} }
+        #box { width: 500px; background: rgba(15,0,5,0.92); border: 3px solid #ff1493; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 0 25px #ff1493; z-index: 10; }
+        .stage { display: flex; justify-content: center; gap: 30px; height: 140px; margin-bottom: 15px; }
+        .img { width: 130px; height: 130px; border-radius: 10px; border: 2px solid #ff1493; object-fit: cover; transition: 0.3s; background: rgba(0,0,0,0.5); }
+        .off { opacity: 0.2; filter: grayscale(80%); border-color: #555; }
+        .hide { display: none; }
+        #spk { font-size: 14px; color: #ff1493; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; text-align: left; padding-left: 10px; }
+        #txt { font-size: 15px; border: 2px solid rgba(255,20,147,0.3); background: rgba(0,0,0,0.7); padding: 15px; margin-bottom: 15px; text-align: left; color: #ffb6c1; border-radius: 6px; min-height: 50px; }
+        .btn { background: #ff1493; color: #fff; border: none; padding: 12px; margin: 5px 0; width: 100%; border-radius: 6px; cursor: pointer; font-family: inherit; text-align: left; font-size: 14px; }
+        .btn:hover { background: #c71585; }
+        .bc { width: 100%; background: #333; height: 6px; border-radius: 4px; margin-bottom: 15px; overflow: hidden; }
+        #bar { width: 50%; height: 100%; background: #ff1493; transition: 0.5s; }
+    </style>
+</head>
+<body>
+<div id="ov"></div><div id="hearts"></div>
+<div id="box">
+    <div style="font-size:11px; color:#ffb6c1; text-align:left; margin-bottom:3px;">МЕНТАЛЬНОЕ СОСТОЯНИЕ АЯНО:</div>
+    <div class="bc"><div id="bar"></div></div>
+    <div class="stage"><img id="im1" class="img" src="yandere.png"><img id="im2" class="img hide" src=""></div>
+    <div id="spk"></div><div id="txt"></div>
+    <button id="b1" class="btn"></button><button id="b2" class="btn"></button>
+</div>
+<script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playChimes(bad) {
+        const notes = bad ? [130.81, 146.83, 164.81, 196.00] : [523.25, 587.33, 659.25, 783.99];
+        notes.forEach((f, i) => setTimeout(() => {
+            try {
+                let o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                o.type = bad ? 'sawtooth' : 'triangle'; o.frequency.value = f + (bad ? Math.random()*8-4 : 0);
+                g.gain.setValueAtTime(0.08, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (bad ? 0.8 : 0.4));
+                o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + (bad ? 0.8 : 0.4));
+            } catch(e){}
+        }, i * (bad ? 250 : 120)));
+    }
+
+    let rin = "alive";
+    const story = {
+        start: { t: "«Ой, Таро-кун! Поможешь мне после уроков с математикой? Только ты и я...»", i1: "yandere.png", i2: "rival.png", s2: true, ask: 2, sp: "Рин (Соперница)", eff: "none", ov: "rgba(26,2,8,0.4)", bar: 50, c: [{ n: "❤️ Вмешаться ласково", next: "g_talk" }, { n: "🔪 Запереть её в туалете", next: "b_talk" }] },
+        g_talk: { t: "«Привет, Таро-кун! Ой, Рин, а разве ты не занята? Мы с Таро хотели пройтись вместе...»", i1: "yandere2.png", i2: "rival.png", s2: true, ask: 1, sp: "Аяно", eff: "none", ov: "rgba(26,2,8,0.4)", bar: 55, c: [{ n: "▶️ Ответ Таро", next: "good" }] },
+        good: { t: "«Ой, Аяно! Привет... Рин просто просила помочь. С удовольствием с тобой пройдусь! Пойдём?»", i1: "yandere2.png", i2: "sempai.png", s2: true, ask: 2, sp: "Таро (Сэмпай)", eff: "love", ov: "rgba(74,13,43,0.4)", bar: 80, c: [{ n: "❤️ 'С радостью!'", next: "check" }, { n: "🔪 'Конечно, ты только мой...'", next: "scare" }] },
+        b_talk: { t: "«Смейся, дрянь... Посмотрим, как ты заговоришь, запертая в старом туалете на третьем этаже...»", i1: "yandere1.png", i2: "rival.png", s2: true, ask: 1, sp: "Аяно (Мысли)", eff: "mad", ov: "rgba(35,0,5,0.5)", bar: 40, act:()=>rin="trapped", c: [{ n: "▶️ На следующий день...", next: "bad" }] },
+        bad: { t: "«Аяно, Рин плакала и забирает документы! Ей кто-то жутко угрожал... Это твоих рук дело?! Зачем?!»", i1: "yandere1.png", i2: "sempai.png", s2: true, ask: 2, sp: "Таро (Сэмпай)", eff: "mad", ov: "rgba(59,0,8,0.6)", bar: 20, c: [{ n: "❤️ 'Я испугалась, что ты разлюбишь меня...'", next: "d2" }, { n: "🔪 'Никто не смеет смотреть на тебя!'", next: "lose" }] },
+        scare: { t: "«Твой взгляд пугает меня, Аяно. Мне нужно побыть одному, пожалуйста, не ходи за мной сегодня.»", i1: "yandere1.png", i2: "sempai.png", s2: true, ask: 2, sp: "Таро (Сэмпай)", eff: "mad", ov: "rgba(59,0,8,0.7)", bar: 15, c: [{ n: "❤️ *Расплакаться и обнять его*", next: "d2" }, { n: "🔪 *Схватить за руку* 'Ты не уйдешь!'", next: "lose" }] },
+        d2_p: { t: "«Таро! Дурак! Опять ты опоздал! О, а это Аяно? Слышала, вы вчера гуляли. Но не думай, что заберёшь его!»", i1: "yandere.png", i2: "friend.png", s2: true, ask: 2, sp: "Осана", eff: "none", ov: "rgba(26,2,8,0.4)", bar: 60, c: [{ n: "❤️ *Улыбнуться и ждать ответа*", next: "d2_l" }, { n: "🔪 «Хватит кричать на Таро...»", next: "d2_m_t" }] },
+        d2_s: { t: "«Таро... Вчера кто-то запер Рин в туалете, она ушла. Мне кажется, за тобой следит псих! Аяно, ты чего тут трёшься?!»", i1: "yandere.png", i2: "friend.png", s2: true, ask: 2, sp: "Осана", eff: "none", ov: "rgba(45,10,20,0.5)", bar: 35, c: [{ n: "❤️ «Какой кошмар! Я защищу Таро!»", next: "d2_l" }, { n: "🔪 (Мысли): «Следующей будешь ТЫ...»", next: "d2_m_t" }] },
+        d2_l: { t: "«Осана, Аяно хорошая! Мы собирались пообедать вместе. Аяно, угостишь Осану своим бенто?»", i1: "yandere2.png", i2: "sempai.png", s2: true, ask: 2, sp: "Таро (Сэмпай)", eff: "love", ov: "rgba(74,13,43,0.4)", bar: 90, c: [{ n: "❤️ 'Конечно, держи!'", next: "win" }, { n: "🔪 (Мысли): «Я подсыплю ей яд... Gomennasai...»", next: "d2_m" }] },
+        d2_m_t: { t: "«Она слишком много себе позволяет. Пора избавить Таро от её влияния... Насовсем.»", i1: "yandere1.png", i2: "friend.png", s2: true, ask: 1, sp: "Аяно (Мысли)", eff: "mad", ov: "rgba(45,0,5,0.6)", bar: 30, c: [{ n: "▶️ Во время обеда...", next: "d2_m" }] },
+        d2_m: { t: "«Осана исчезла посреди дня... Вокруг происходит что-то ужасное! Аяно, мне так страшно, не бросай меня!»", i1: "yandere1.png", i2: "sempai.png", s2: true, ask: 2, sp: "Таро (Сэмпай)", eff: "mad", ov: "rgba(59,0,8,0.8)", bar: 10, c: [{ n: "❤️ «Не бойся, я ВСЕГДА защищу тебя».", next: "win" }, { n: "🔪 «Это я избавилась от них ради НАС!»", next: "lose" }] },
+        win: { t: "ПОБЕДА! Таро держит тебя за руку под багровым закатом. Он шепчет, что любит тебя, а все соперницы в прошлом.", i1: "yandere2.png", s2: false, ask: 1, sp: "Финал Любви", eff: "love", ov: "rgba(100,15,50,0.5)", bar: 100, c: [] },
+        lose: { t: "КОНЕЦ! Таро в абсолютном ужасе вызывает полицию и бежит. Сирены всё ближе. Но ты лишь счастливо улыбаешься...", i1: "yandere1.png", s2: false, ask: 1, sp: "Финал Безумия", eff: "mad", ov: "rgba(18,0,2,0.8)", bar: 0, c: [] }
+    };
+
+    let cur = "start";
+    function loop() {
+        if(cur==="check") cur=(rin==="trapped")?"d2_s":"d2_p";
+        const s=story[cur], b=document.getElementById("box"), b1=document.getElementById("b1"), b2=document.getElementById("b2"), i1=document.getElementById("im1"), i2=document.getElementById("im2");
+        if(s.act)s.act(); document.getElementById("txt").textContent=s.t; document.getElementById("spk").textContent="ГОВОРИТ: " + s.sp;
+        document.getElementById("ov").style.background=s.ov; document.getElementById("bar").style.width=s.bar+"%";
+        document.getElementById("bar").style.background=s.bar<40?"#ff0000":"#ff1493"; i1.src=s.i1; b.className=s.eff==="mad" ? "shake" : "";
+        i1.className=s.ask===1?"img":"img off";
+        if(s.s2){i2.src=s.i2; i2.classList.remove("hide"); i2.className=s.ask===2?"img":"img off";}else i2.classList.add("hide");
+        document.getElementById("hearts").innerHTML=""; if(s.eff==="love")for(let i=0;i<12;i++)document.getElementById("hearts").innerHTML+=`<div class="heart" style="left:${Math.random()*100}vw; animation-delay:${Math.random()*2}s">❤️</div>`;
+        if(!s.c.length){ b1.textContent="Заново"; b1.onclick=()=>{cur="start"; rin="alive"; loop();}; b2.classList.add("hide"); }
+        else{ b2.classList.remove("hide"); b1.textContent=s.c[0].n; b1.onclick=()=>{playChimes(s.c[0].n.includes('🔪')); cur=s.c[0].next; loop();}; if(s.c[1]){b2.classList.remove("hide"); b2.textContent=s.c[1].n; b2.onclick=()=>{playChimes(s.c[1].n.includes('🔪')); cur=s.c[1].next; loop();};}else b2.classList.add("hide");}
+    }
+    loop();
+</script>
+</body>
+</html>
